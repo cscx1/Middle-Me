@@ -32,6 +32,14 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Set business_mode cookie when user visits /business (cookies can only be modified in middleware or Server Actions)
+  if (pathname.startsWith('/business')) {
+    supabaseResponse.cookies.set('middle_me_business_mode', 'true', {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+    })
+  }
+
   // Redirect unauthenticated users away from protected routes
   if (
     !user &&

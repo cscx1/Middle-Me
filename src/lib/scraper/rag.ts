@@ -20,7 +20,7 @@ async function generateQueryEmbedding(query: string): Promise<number[]> {
     if (error || !data?.embedding) throw new Error('No embedding returned')
     return data.embedding
   } catch {
-    return new Array(1536).fill(0)
+    return new Array(768).fill(0)
   }
 }
 

@@ -66,7 +66,7 @@ create table if not exists articles (
   title       text not null,
   content     text not null,
   topic       text,
-  embedding   vector(1536),
+  embedding   vector(768),
   scraped_at  timestamptz default now() not null
 );
 
@@ -92,7 +92,7 @@ create or replace view trending_topics as
 -- MATCH ARTICLES (pgvector similarity search)
 -- ─────────────────────────────────────────────
 create or replace function match_articles(
-  query_embedding vector(1536),
+  query_embedding vector(768),
   match_count     int default 3,
   match_threshold float default 0.5
 )

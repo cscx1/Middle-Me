@@ -37,6 +37,9 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --positive-blue: 214 72% 59%;
+    --positive-green: 93 70% 49%;
+    --positive-amber: 34 91% 55%;
   }
 
   .dark {
@@ -72,6 +75,9 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --positive-blue: 214 65% 55%;
+    --positive-green: 93 60% 45%;
+    --positive-amber: 34 85% 50%;
   }
 }
 

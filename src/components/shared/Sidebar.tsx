@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, MessageSquare, Plus, LogOut } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Plus, LogOut, Briefcase } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { signOut } from '@/actions/auth'
 
@@ -27,7 +27,7 @@ export function Sidebar() {
       <div className="px-3 pt-4">
         <Link
           href="/sessions/new"
-          className="flex items-center gap-2 w-full bg-sidebar-primary text-sidebar-primary-foreground rounded-lg px-3 py-2 text-sm font-medium hover:bg-sidebar-primary/90 transition-colors"
+          className="flex items-center gap-2 w-full bg-positive-blue hover:bg-positive-blue/90 text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-positive-blue/40 focus-visible:ring-offset-2"
         >
           <Plus className="w-4 h-4" />
           New Session
@@ -36,25 +36,57 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-3 pt-4 space-y-1">
-        {navItems.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
+        {navItems.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href + '/'))
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                isActive
+                  ? 'bg-positive-blue/10 text-positive-blue font-medium border-l-2 border-positive-blue pl-[10px]'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+              )}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              {label}
+            </Link>
+          )
+        })}
+
+        {/* Workplace Harmony AI nav link */}
+        <Link
+          href="/business"
+          className={cn(
+            'flex items-start gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
+            pathname.startsWith('/business')
+              ? 'bg-positive-blue/10 text-positive-blue border border-positive-blue/20 font-medium'
+              : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+          )}
+        >
+          <Briefcase
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-              pathname === href || pathname.startsWith(href + '/')
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+              'w-4 h-4 shrink-0 mt-0.5',
+              pathname.startsWith('/business') ? 'text-positive-blue' : ''
             )}
-          >
-            <Icon className="w-4 h-4 shrink-0" />
-            {label}
-          </Link>
-        ))}
+          />
+          <div className="min-w-0">
+            <div className="font-medium leading-tight">Workplace Harmony AI</div>
+            <div
+              className={cn(
+                'text-xs mt-0.5 font-normal',
+                pathname.startsWith('/business') ? 'text-positive-blue/70' : 'text-muted-foreground'
+              )}
+            >
+              Enterprise mediation
+            </div>
+          </div>
+        </Link>
       </nav>
 
       {/* Sign out */}
-      <div className="px-3 pb-4 border-t pt-4">
+      <div className="px-3 pb-4 border-t pt-3">
         <form action={signOut}>
           <button
             type="submit"

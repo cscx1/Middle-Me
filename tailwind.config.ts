@@ -60,6 +60,11 @@ const config: Config = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        positive: {
+          blue: 'hsl(var(--positive-blue))',
+          green: 'hsl(var(--positive-green))',
+          amber: 'hsl(var(--positive-amber))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

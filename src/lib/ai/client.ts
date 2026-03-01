@@ -1,8 +1,8 @@
-import { ChatAnthropic } from '@langchain/anthropic'
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 
-export const anthropicClient = new ChatAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-  model: 'claude-3-5-sonnet-20241022',
+export const geminiClient = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_API_KEY,
+  model: 'gemini-2.5-flash',
   temperature: 0.7,
-  maxTokens: 1024,
+  maxOutputTokens: 1024,
 })

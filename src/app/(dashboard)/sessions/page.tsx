@@ -14,6 +14,8 @@ export default async function SessionsPage() {
     .from('sessions')
     .select('*')
     .eq('created_by', user!.id)
+    .eq('business_mode', false)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   const sessions = (data ?? []) as Session[]
@@ -24,7 +26,7 @@ export default async function SessionsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Sessions</h1>
         <Link
           href="/sessions/new"
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="inline-flex items-center gap-2 bg-positive-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-positive-blue/90 transition-colors focus-visible:ring-2 focus-visible:ring-positive-blue/40 focus-visible:ring-offset-2"
         >
           <Plus className="w-4 h-4" />
           New session
@@ -38,7 +40,7 @@ export default async function SessionsPage() {
           </p>
           <Link
             href="/sessions/new"
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 bg-positive-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-positive-blue/90 transition-colors focus-visible:ring-2 focus-visible:ring-positive-blue/40 focus-visible:ring-offset-2"
           >
             <Plus className="w-4 h-4" />
             Start session
