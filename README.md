@@ -1,95 +1,36 @@
-# Middle Me
-
-AI-powered mediation platform that helps people find common ground across differences.
-
-## Tech Stack
-
-- **Next.js 15** (App Router, TypeScript, Server Actions)
-- **Supabase** (Auth, Postgres, pgvector, Realtime, Edge Functions)
-- **LangChain + Claude** (claude-3-5-sonnet-20241022)
-- **TailwindCSS + shadcn/ui**
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-### 1. Clone and install
-
-```bash
-git clone <repo>
-cd Middle-Me
-npm install
-```
-
-### 2. Set up Supabase
-
-1. Create a project at [supabase.com](https://supabase.com)
-2. Enable pgvector: `Database → Extensions → vector`
-3. Run the migration: `supabase db push` or paste `supabase/migrations/0001_init.sql` into the SQL editor
-4. Enable Realtime on the `articles` table: `Database → Replication → articles`
-
-### 3. Configure environment
-
-```bash
-cp .env.local.example .env.local
-```
-
-Fill in:
-- `NEXT_PUBLIC_SUPABASE_URL` — your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon/public key
-- `SUPABASE_SERVICE_ROLE_KEY` — service role key (for edge functions)
-- `ANTHROPIC_API_KEY` — from [console.anthropic.com](https://console.anthropic.com)
-- `NEWS_API_KEY` — from [newsapi.org](https://newsapi.org) (free tier works)
-
-### 4. Run the dev server
+First, run the development server:
 
 ```bash
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-### 5. (Optional) Deploy the scraper Edge Function
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-```bash
-supabase functions deploy scrape-news --env-file .env.local
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-Trigger a scrape manually:
-```bash
-curl -X POST https://<project>.supabase.co/functions/v1/scrape-news \
-  -H "Authorization: Bearer <anon-key>" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "political debate immigration climate"}'
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Architecture
+## Learn More
 
-```
-src/
-├── app/
-│   ├── (auth)/          # login, signup
-│   └── (dashboard)/     # protected: dashboard, sessions
-├── components/
-│   ├── features/        # auth, sessions, trending
-│   └── shared/          # Sidebar
-├── lib/
-│   ├── supabase/        # server + browser clients
-│   ├── ai/              # LangChain chain + Claude
-│   └── scraper/         # RAG retrieval + edge function trigger
-├── actions/             # server actions (auth, sessions)
-└── types/               # shared TypeScript types
-supabase/
-├── migrations/          # Postgres schema
-└── functions/           # Deno edge functions
-```
+To learn more about Next.js, take a look at the following resources:
 
-## Key Flows
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-**Chat with AI Mediator:**
-1. User submits a message → `sendMessage` server action
-2. `retrieveContext()` runs pgvector similarity search over `articles`
-3. Top-3 articles injected as context into `mediationChain.invoke()`
-4. Claude responds as neutral mediator, both messages persisted to Supabase
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-**Trending Topics (Realtime):**
-1. `scrape-news` edge function fetches news → embeds → upserts `articles`
-2. `trending_topics` SQL view aggregates by topic
-3. `TrendingTopics` component subscribes to `articles` inserts via Supabase Realtime
-4. UI updates live without page refresh
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
