@@ -18,8 +18,15 @@ export function Sidebar() {
     <aside className="w-60 shrink-0 border-r bg-sidebar flex flex-col h-screen sticky top-0">
       {/* Logo */}
       <div className="h-16 flex items-center px-5 border-b">
-        <Link href="/dashboard" className="font-semibold tracking-tight text-sidebar-foreground">
-          Middle Me
+        <Link href="/dashboard" className="flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-positive-blue/40 focus-visible:ring-offset-2 rounded">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/Middle-Me-3.png"
+            alt="Middle Me"
+            width={900}
+            height={100}
+            className="h-14 w-auto object-contain"
+          />
         </Link>
       </div>
 

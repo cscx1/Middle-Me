@@ -94,6 +94,7 @@ export async function createSession(formData: FormData): Promise<void> {
         emotional_score: 'N/A',
         openness_score: 'N/A',
         suggested_step: 'deescalation',
+        conversation_history: '(First message — no history yet)',
       },
       businessMode
     )
@@ -148,12 +149,23 @@ export async function sendMessage(
 
   if (!session) return { success: false, error: 'Session not found' }
 
-  // Count existing mediator messages to determine step_index
-  const { count: mediatorCount } = await supabase
+  // Fetch prior messages for conversation history and mediator count
+  const { data: priorMessages } = await supabase
     .from('messages')
-    .select('id', { count: 'exact', head: true })
+    .select('role, content')
     .eq('session_id', sessionId)
-    .eq('role', 'mediator')
+    .order('created_at', { ascending: true })
+    .limit(20)
+
+  const mediatorCount = (priorMessages ?? []).filter(
+    (m: { role: string }) => m.role === 'mediator'
+  ).length
+
+  const conversationHistory = (priorMessages ?? [])
+    .map((m: { role: string; content: string }) =>
+      `${m.role === 'user' ? 'User' : 'Mediator'}: ${m.content.slice(0, 300)}`
+    )
+    .join('\n') || '(First message — no history yet)'
 
   const stepIndex = mediatorCount ?? 0
   const emotionalScore = (session.emotional_alignment_score ?? session.avg_rating) as number | null
@@ -182,6 +194,7 @@ export async function sendMessage(
         emotional_score: emotionalScore != null ? String(emotionalScore.toFixed(2)) : 'N/A',
         openness_score: opennessScore != null ? String(opennessScore.toFixed(2)) : 'N/A',
         suggested_step: suggestedStep,
+        conversation_history: conversationHistory,
       },
       effectiveBusinessMode
     )
@@ -268,7 +281,7 @@ export async function submitInteraction(
   // Recompute scores from all interactions for this session
   const { data: allInteractions } = await supabase
     .from('message_interactions')
-    .select('interaction_type, response_value, messages!inner(session_id)')
+    .select('interaction_type, response_value, messages!inner(session_id, meta)')
     .eq('messages.session_id', sessionId)
     .eq('user_id', user.id)
 
@@ -280,8 +293,18 @@ export async function submitInteraction(
     const yesNoInteractions = allInteractions.filter(i => i.interaction_type === 'yes_no')
 
     if (scaleInteractions.length > 0) {
-      const sum = scaleInteractions.reduce((acc, i) => acc + i.response_value, 0)
-      newEmotionalScore = Math.round((sum / scaleInteractions.length) * 100) / 100
+      // Invert deescalation ratings (5 stars = very distressed = low progress)
+      const sum = scaleInteractions.reduce((acc, i) => {
+        const stepType = (i.messages as any)?.meta?.step_type
+        const value = stepType === 'deescalation' ? (6 - i.response_value) : i.response_value
+        return acc + value
+      }, 0)
+      const rawAvg = sum / scaleInteractions.length
+
+      // Gate progress by session depth so early interactions can't spike the meter
+      const totalInteractions = scaleInteractions.length + yesNoInteractions.length
+      const progressionFactor = Math.min(totalInteractions / 5, 1.0)
+      newEmotionalScore = Math.round(rawAvg * progressionFactor * 100) / 100
     }
 
     if (yesNoInteractions.length > 0) {

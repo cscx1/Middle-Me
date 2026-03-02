@@ -1,95 +1,106 @@
 # Middle Me
 
-AI-powered mediation platform that helps people find common ground across differences.
+**Middle Me** is an AI-powered mediation platform that helps people find common ground across differences—in personal disagreements or at work. It combines a warm, emotionally intelligent mediator (powered by LLMs) with **RAG** (retrieval over news and policy) so conversations stay grounded in real context, and offers a dedicated **EAP (Employee Assistance Program)** mode for workplace conflict and wellness.
+
+## What It Does
+
+- **Personal mediation:** You describe your view and the other side’s view; the AI mediates in a structured chat, reflects both perspectives, and asks short adaptive questions to de-escalate and find shared values.
+- **Workplace / EAP mode:** Same flow tuned for work: professional tone, aligned with company policy and inclusion, so teams can resolve conflict and strengthen relationships without leaving the app.
+- **RAG-backed responses:** Each turn can pull in relevant articles (or policy) via vector search so the mediator can reference real-world context and reduce bias from the model alone.
+- **Structured journey:** Emotional check-ins, “meet in the middle” summaries, and optional session memory so progress is visible and conversations feel contained and safe.
+
+---
 
 ## Tech Stack
 
-- **Next.js 15** (App Router, TypeScript, Server Actions)
-- **Supabase** (Auth, Postgres, pgvector, Realtime, Edge Functions)
-- **LangChain + Claude** (claude-3-5-sonnet-20241022)
-- **TailwindCSS + shadcn/ui**
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 16 (App Router), React 19, TypeScript |
+| **Styling** | TailwindCSS, shadcn/ui (Radix) |
+| **Backend / Data** | Supabase: Auth, Postgres, pgvector, Realtime, Edge Functions |
+| **AI** | LangChain, Google Gemini (gemini-2.5-flash) |
+| **RAG** | Embeddings (Supabase/embed or compatible) + pgvector similarity search over `articles` |
+
+---
 
 ## Getting Started
 
 ### 1. Clone and install
 
 ```bash
-git clone <repo>
+git clone https://github.com/cscx1/Middle-Me.git
 cd Middle-Me
 npm install
 ```
 
 ### 2. Set up Supabase
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. Enable pgvector: `Database → Extensions → vector`
-3. Run the migration: `supabase db push` or paste `supabase/migrations/0001_init.sql` into the SQL editor
-4. Enable Realtime on the `articles` table: `Database → Replication → articles`
+1. Create a project at [supabase.com](https://supabase.com).
+2. Enable **pgvector:** `Database → Extensions → vector`.
+3. Run migrations: `supabase db push` or apply SQL in `supabase/migrations/` via the SQL editor.
+4. (Optional) Enable Realtime on `articles` for live trending: `Database → Replication → articles`.
 
-### 3. Configure environment
+### 3. Environment
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-Fill in:
-- `NEXT_PUBLIC_SUPABASE_URL` — your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon/public key
-- `SUPABASE_SERVICE_ROLE_KEY` — service role key (for edge functions)
-- `ANTHROPIC_API_KEY` — from [console.anthropic.com](https://console.anthropic.com)
-- `NEWS_API_KEY` — from [newsapi.org](https://newsapi.org) (free tier works)
+Configure in `.env.local`:
 
-### 4. Run the dev server
+- **Supabase:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- **Gemini:** `GOOGLE_API_KEY` from [Google AI Studio](https://aistudio.google.com/app/apikey)
+- **Scraper (optional):** `NEWS_API_KEY` from [newsapi.org](https://newsapi.org) for the news-ingest edge function
+
+### 4. Run the app
 
 ```bash
 npm run dev
 ```
 
-### 5. (Optional) Deploy the scraper Edge Function
+### 5. (Optional) Deploy the news-scraper Edge Function
 
 ```bash
 supabase functions deploy scrape-news --env-file .env.local
 ```
 
-Trigger a scrape manually:
-```bash
-curl -X POST https://<project>.supabase.co/functions/v1/scrape-news \
-  -H "Authorization: Bearer <anon-key>" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "political debate immigration climate"}'
-```
+---
 
-## Architecture
+## Project Layout
 
 ```
 src/
 ├── app/
-│   ├── (auth)/          # login, signup
-│   └── (dashboard)/     # protected: dashboard, sessions
+│   ├── (auth)/              # login, signup
+│   └── (dashboard)/        # dashboard, sessions, business (EAP)
 ├── components/
-│   ├── features/        # auth, sessions, trending
-│   └── shared/          # Sidebar
+│   ├── features/           # auth, sessions, business, emotional meter, summaries
+│   ├── shared/             # Sidebar, etc.
+│   └── ui/                 # shared UI (modals, etc.)
 ├── lib/
-│   ├── supabase/        # server + browser clients
-│   ├── ai/              # LangChain chain + Claude
-│   └── scraper/         # RAG retrieval + edge function trigger
-├── actions/             # server actions (auth, sessions)
-└── types/               # shared TypeScript types
+│   ├── supabase/           # server + browser clients
+│   ├── ai/                 # LangChain + Gemini (mediation + business chains)
+│   └── scraper/            # RAG retrieval + edge function trigger
+├── actions/                # server actions (auth, sessions)
+└── types/
 supabase/
-├── migrations/          # Postgres schema
-└── functions/           # Deno edge functions
+├── migrations/             # Postgres schema (incl. pgvector, sessions, articles)
+└── functions/              # Deno edge functions (e.g. scrape-news)
 ```
 
-## Key Flows
+---
 
-**Chat with AI Mediator:**
-1. User submits a message → `sendMessage` server action
-2. `retrieveContext()` runs pgvector similarity search over `articles`
-3. Top-3 articles injected as context into `mediationChain.invoke()`
-4. Claude responds as neutral mediator, both messages persisted to Supabase
+## Main Flows
 
-**Trending Topics (Realtime):**
-1. `scrape-news` edge function fetches news → embeds → upserts `articles`
-2. `trending_topics` SQL view aggregates by topic
-3. `TrendingTopics` component subscribes to `articles` inserts via Supabase Realtime
-4. UI updates live without page refresh
+**Mediation chat (with RAG)**  
+1. User sends a message in a session.  
+2. `retrieveContext()` runs vector similarity over `articles` (and optional policy docs).  
+3. Top matches are passed as context into the mediation chain (Gemini).  
+4. The model responds as a neutral mediator; both user and AI messages are stored in Supabase.
+
+**EAP / Business mode**  
+- Same flow with a dedicated business chain and dashboard; tone and prompts are tuned for workplace conflict and policy-aware guidance.
+
+**Trending / news (optional)**  
+- `scrape-news` edge function fetches and embeds news, upserts into `articles`.  
+- A `trending_topics`-style view and Realtime subscription can drive a live “trending” UI.
