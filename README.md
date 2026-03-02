@@ -42,15 +42,11 @@ npm install
 
 ### 3. Environment
 
-```bash
-cp .env.local.example .env.local
-```
-
-Configure in `.env.local`:
+Create `.env.local` with:
 
 - **Supabase:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - **Gemini:** `GOOGLE_API_KEY` from [Google AI Studio](https://aistudio.google.com/app/apikey)
-- **Scraper (optional):** `NEWS_API_KEY` from [newsapi.org](https://newsapi.org) for the news-ingest edge function
+- **Scraper (optional):** `NEWS_API_KEY` from [newsapi.org](https://newsapi.org) for the news edge function
 
 ### 4. Run the app
 
