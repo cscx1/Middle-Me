@@ -1,13 +1,17 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
-export async function middleware(request: NextRequest) { 
+export async function middleware(request: NextRequest) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  try {
+    const supabase = createServerClient(url, key, {
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -22,34 +26,33 @@ export async function middleware(request: NextRequest) {
           )
         },
       },
-    }
-  )
-
-  // Refresh session — must await to keep cookies fresh
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const { pathname } = request.nextUrl
-
-  // Set business_mode cookie when user visits /business (cookies can only be modified in middleware or Server Actions)
-  if (pathname.startsWith('/business')) {
-    supabaseResponse.cookies.set('middle_me_business_mode', 'true', {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 365,
     })
-  }
 
-  // Redirect unauthenticated users away from protected routes
-  if (
-    !user &&
-    !pathname.startsWith('/login') &&
-    !pathname.startsWith('/signup') &&
-    pathname !== '/'
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    const { pathname } = request.nextUrl
+
+    if (pathname.startsWith('/business')) {
+      supabaseResponse.cookies.set('middle_me_business_mode', 'true', {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365,
+      })
+    }
+
+    if (
+      !user &&
+      !pathname.startsWith('/login') &&
+      !pathname.startsWith('/signup') &&
+      pathname !== '/'
+    ) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      return NextResponse.redirect(redirectUrl)
+    }
+  } catch {
+    return NextResponse.next({ request })
   }
 
   return supabaseResponse
