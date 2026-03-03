@@ -1,5 +1,5 @@
 # Middle Me
-
+ 
 **Middle Me** is an AI-powered mediation platform that helps people find common ground across differences—in personal disagreements or at work. It combines a warm, emotionally intelligent mediator (powered by LLMs) with **RAG** (retrieval over news and policy) so conversations stay grounded in real context, and offers a dedicated **EAP (Employee Assistance Program)** mode for workplace conflict and wellness.
 
 ## What It Does
