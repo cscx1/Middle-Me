@@ -3,7 +3,7 @@
 // classifies topics via Gemini 2.5 Flash, and upserts into the articles table.
 //
 // Local dev: supabase functions serve scrape-news --env-file .env.local
-// Deploy:    supabase functions deploy scrape-news
+// Deploy:    supabase functions deploy scrape-news 
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
