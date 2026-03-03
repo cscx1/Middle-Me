@@ -18,7 +18,7 @@ export async function signIn(formData: FormData): Promise<ActionResult> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     if (msg.includes('NEXT_REDIRECT')) throw err
-    return { success: false, error: 'Sign-in failed. Check server configuration (env vars) or try again.' }
+    return { success: false, error: msg || 'Sign-in failed. Check server configuration or try again.' }
   }
 }
 
@@ -43,7 +43,7 @@ export async function signUp(formData: FormData): Promise<ActionResult> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     if (msg.includes('NEXT_REDIRECT')) throw err
-    return { success: false, error: 'Sign-up failed. Check server configuration (env vars) or try again.' }
+    return { success: false, error: msg || 'Sign-up failed. Check server configuration or try again.' }
   }
 }
 
